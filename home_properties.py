@@ -5,7 +5,7 @@ class ListingSpider(scrapy.Spider):
     name = "ListingSpider"
     start_urls = ["https://www.airbnb.com/rooms/427077"]
     f= open("apartment.csv", "a+")
-    f.write("Listing_id, No_Of_Reviews, Listing_rating, *Amenities \n")
+    f.write("Listing_id, No_Of_Reviews, Listing_rating, No_Of_Photos, *Amenities \n")
     #File handle to write the properties of a file to a CSV file
     #f = open("apartment.csv", "a+")
     
@@ -33,21 +33,27 @@ class ListingSpider(scrapy.Spider):
         start_index = text.index('content="')+9
         self.f.write(", " + text[start_index:start_index+1])
         
-    
+    def get_num_of_photos(self, text):
+        #print(text.index('"thumbnail":"https:'))
+        self.f.write(", " + str(text.count('"thumbnail":"https:')))
+        
     def parse(self, response):
         #f = open("apartment.csv", "a+")
         #Write the listing_Id to the file
         url = str(self.start_urls)
         self.f.write(url[url.index("/rooms")+7:-2])
         #Selector to get the script that contains "application/json"
-        AMENITIES_SELECTOR = "//script[@type ='application/json']/text()"
+        GENERAL_SELECTOR = "//script[@type ='application/json']/text()"
         RATING_SELECTOR = '//div[@id="reviews"]'
         
         #Get the reviews of the listing
         self.get_reviews(str(response.xpath(RATING_SELECTOR).extract()))
         
+        #Get the number of photos
+        self.get_num_of_photos(str(response.xpath(GENERAL_SELECTOR).extract()))
+        
         #Get the amenities of the listing
-        for script in response.xpath(AMENITIES_SELECTOR):
+        for script in response.xpath(GENERAL_SELECTOR):
             text = script.extract()
             ## Get the listing_amenities
             if "listing_amenities" in text:
