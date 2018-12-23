@@ -9,6 +9,7 @@ class ListingSpider(scrapy.Spider):
     #File handle to write the properties of a file to a CSV file
     #f = open("apartment.csv", "a+")
     
+    """Method to get the amenities of a listing"""
     def get_amenities(self, text):
         #File handle to write the properties of a file to a CSV file
         start_index = text.index('"listing_amenities":')
@@ -23,18 +24,28 @@ class ListingSpider(scrapy.Spider):
         for x in range(name_count):
             start_index = text.index("name", start_index)+ 7
             stop_index = text.index('",', start_index)
-            self.f.write(", " + text[start_index: stop_index])
+            print(text[start_index: stop_index])
+            #The amenity Pack ’n Play/travel crib isn't formatted properly
+            #in the csv file. The replace let's me change 'n to and
+            self.f.write(", " + text[start_index: stop_index].replace("’n", "and"))
         self.f.write("\n")   
     
+    """Method to get the Number of reviews and aggregate rating for 
+    a listing""" 
     def get_reviews(self, text):
+        # Tag "_1dl27thl"> is the closest tag to the number of reviews a 
+        #   listing has
         start_index = text.index('"_1dl27thl">')+12
         stop_index = text.index(" ", start_index)
         self.f.write(", " + text[start_index: stop_index])
+        #Tag content=" is the closest tag to the aggregate rating for a listing
         start_index = text.index('content="')+9
         self.f.write(", " + text[start_index:start_index+1])
-        
+    
+    """Method to get the number of photos for a listing"""    
     def get_num_of_photos(self, text):
-        #print(text.index('"thumbnail":"https:'))
+        #The "thumbnail":"https: is commensurate with the number of
+        #photos a listing has
         self.f.write(", " + str(text.count('"thumbnail":"https:')))
         
     def parse(self, response):
