@@ -24,9 +24,8 @@ class ListingSpider(scrapy.Spider):
         for x in range(name_count):
             start_index = text.index("name", start_index)+ 7
             stop_index = text.index('",', start_index)
-            print(text[start_index: stop_index])
             #The amenity Pack ’n Play/travel crib isn't formatted properly
-            #in the csv file. The replace let's me change 'n to and
+            #in the csv file. The replace let's me change ’n to and
             self.f.write(", " + text[start_index: stop_index].replace("’n", "and"))
         self.f.write("\n")   
     
