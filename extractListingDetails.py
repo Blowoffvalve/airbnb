@@ -1,4 +1,4 @@
-class extractListingDetails:
+class ExtractListingDetails:
     """I am not using static methods because i intend to use an __init__ to get all this details into one dictionary that i'll write to a file"""
     def get_no_reviews(self, listing):
         """I get the number of reviews from the visible review count atttribute. Not sure if this is total review count for the listing or just the visible ones because Airbnb selects what reviews are shown to guests"""
@@ -186,7 +186,7 @@ class extractListingDetails:
         return photos
     
     def get_host_details(self,listing):
-        return listing[primary_host]
+        return listing["primary_host"]
     
     def get_host_id(self, listing):
         return self.get_host_details(listing)["id"]
