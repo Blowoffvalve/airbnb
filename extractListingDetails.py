@@ -1,9 +1,11 @@
+import json
+
 class Listing:
     """I am not using static methods because i intend to use an __init__ to get all this details into one dictionary that i'll write to a file"""
     properties = {}
     
-    def __init__(self, response, image_size = "small"):
-        self.listing = response["bootstrapData"]["reduxData"]["homePDP"]["listingInfo"]["listing"]
+    def __init__(self, soup, image_size = "small"):
+        self.listing = json.loads(str(soup.find_all(type = "application/json")[0]).split("<!--")[1].split("-->")[0])["bootstrapData"]["reduxData"]["homePDP"]["listingInfo"]["listing"]
         self.photo_size = image_size
         self.get_additional_rules()
         self.get_bathroom_label()
@@ -14,10 +16,12 @@ class Listing:
         self.get_checkin_time_localized()
         self.get_checkout_time_localized()
         self.get_children_allowed()
+        self.get_city_name()
         self.get_city_localized()
         self.get_cleanliness_rating()
         self.get_communication_rating()
         self.get_country_code()
+        self.get_country_name()
         self.get_description_language()
         self.get_descriptions()
         self.get_events_allowed()
@@ -66,6 +70,7 @@ class Listing:
         self.get_smoking_allowed()
         self.get_space_details()
         self.get_star_rating()
+        self.get_state_name()
         self.get_summary()
         self.get_transit()
         self.get_value_rating()
@@ -191,7 +196,16 @@ class Listing:
     def get_city_localized(self):
         """This returns the name of the city in the local language e.g. Bombay vs Mumbai"""
         self.properties["city_local_name"] = self.listing["localized_city"]
-
+    
+    def get_city_name(self):
+        self.properties["city_name"] = self.listing["p3_summary_address"].split(",")[0]
+    
+    def get_state_name(self):
+        self.properties["state_name"] = self.listing["p3_summary_address"].split(",")[1].lstrip()
+        
+    def get_country_name(self):
+        self.properties["country_name"] = self.listing["p3_summary_address"].split(",")[2].lstrip()
+    
     def get_location(self):
         self.properties["location"] = self.listing["location_title"]
         
@@ -274,7 +288,17 @@ class Listing:
         self.properties["host_verified"] = self.get_host_details()["identity_verified"]
     
     def get_host_languages(self):
-        self.properties["host_languages"] = self.get_host_details()["languages"]
+        """
+        The host language is both the listing language and any other languages the host speaks.
+        """
+        #self.get_host_details()["languages"] is only populated when the host is multilingual
+        #I consequently add the listing's language as the host's language
+        host_languages = [self.get_descriptions()["localized_language_name"]]
+        #host_languages.append(self.get_host_details()["languages"])
+        for item in self.get_host_details()["languages"]:
+            if item not in host_languages and len(item)>0:
+                host_languages.append(item)
+        self.properties["host_languages"] = host_languages
     
     def get_host_join_date(self):
         self.properties["host_join_date"] = self.get_host_details()["member_since"]

@@ -1,19 +1,23 @@
 import requests
 from bs4 import BeautifulSoup
-import json
+
 from extractListingDetails import Listing
 
-page = requests.get("https://www.airbnb.com/rooms/12964428")
+def get_listing(listingId):
+    listing_url = "https://www.airbnb.com/rooms/" + str(listingId)
+    page = requests.get(listing_url)
+    soup = BeautifulSoup(page.content, 'html.parser')
+    listing = Listing(soup)
+    return listing.properties
+
+
 #12964428
 #22475432
 #16331385
 #16038702
 #427077
 #9472023
-soup = BeautifulSoup(page.content, 'html.parser')
-#b = json.loads(str(soup.find_all(type = "application/json")[0]).split("<!--")[1].split("-->")[0])
-response = json.loads(str(soup.find_all(type = "application/json")[0]).split("<!--")[1].split("-->")[0])
-
-#json.dump(response,open("response.txt", "w"))
-listing = Listing(response)
-listing.properties
+lid = get_listing(9472023)
+print(lid["city_name"])
+print(lid["state_name"])
+print(lid["country_name"])
