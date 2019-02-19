@@ -1,9 +1,9 @@
-class ExtractListingDetails:
+class Listing:
     """I am not using static methods because i intend to use an __init__ to get all this details into one dictionary that i'll write to a file"""
     properties = {}
     
-    def __init__(self, listing, image_size = "small"):
-        self.listing = listing
+    def __init__(self, response, image_size = "small"):
+        self.listing = response["bootstrapData"]["reduxData"]["homePDP"]["listingInfo"]["listing"]
         self.photo_size = image_size
         self.get_additional_rules()
         self.get_bathroom_label()
@@ -18,6 +18,8 @@ class ExtractListingDetails:
         self.get_cleanliness_rating()
         self.get_communication_rating()
         self.get_country_code()
+        self.get_description_language()
+        self.get_descriptions()
         self.get_events_allowed()
         self.get_guest_capacity()
         self.get_guest_controls()
@@ -34,10 +36,15 @@ class ExtractListingDetails:
         self.get_host_verified()
         self.get_infants_allowed()
         self.get_instantBook_possible()
+        self.get_interaction_guide()
         self.get_is_hotel()
+        self.get_is_repr_inventory()
         self.get_latitude()
         self.get_listing_accuracy_rating()
+        self.get_listing_author()
+        self.get_listing_description()
         self.get_listing_expectations()
+        self.get_listing_name()
         self.get_listing_page()
         self.get_listing_requires_license()
         self.get_listing_tier()
@@ -46,25 +53,29 @@ class ExtractListingDetails:
         self.get_location_rating()
         self.get_longitude()
         self.get_native_currency()
+        self.get_neighborhood_details()
+        self.get_notes()
         self.get_no_reviews()
         self.get_overall_guest_satisfaction()
         self.get_pets_allowed()
         self.get_photos_urls()
         self.get_property_type()
-        self.get_rating()
+        self.get_reviews()
+        self.get_review_score()
         self.get_room_bed_details()
         self.get_smoking_allowed()
+        self.get_space_details()
+        self.get_star_rating()
+        self.get_summary()
+        self.get_transit()
         self.get_value_rating()
-        self.get_visible_review_count()
-        
+        self.get_visible_review_count()        
         
     def get_no_reviews(self):
-        """I get the number of reviews from the visible review count atttribute. Not sure if this is total review count for the listing or just the visible ones because Airbnb selects what reviews are shown to guests"""
-        """Verified this by checking content of listing["review_details_interface"]["review_count"]. The number is correct."""
-        return self.listing["visible_review_count"]
+        self.properties["review_count"] = self.listing["review_details_interface"]["review_count"]
     
-    def get_rating(self):
-        return self.listing["star_rating"]
+    def get_review_score(self):
+        self.properties["review_score"] = self.listing["review_details_interface"]["review_score"]
     
     def get_additional_rules(self):
         """Get the additional rules of the listing for NLP analysis later(maybe)"""
@@ -171,7 +182,7 @@ class ExtractListingDetails:
         """This returns the earliest check in time in the listing's local time"""
         ###I return the 2nd value since the values in this field are usually in the format
         ###*After XXPM* 
-        self.properties["checkin_local_time"] =  self.listing["localized_check_in_time_window"].split(" ")[1]
+        self.properties["checkin_local_time"] =  self.listing["localized_check_in_time_window"]
     
     def get_checkout_time_localized(self):
         """This returns the check out time in the listing's local time"""
@@ -283,3 +294,66 @@ class ExtractListingDetails:
     
     def get_listing_tier(self):
         self.properties["listing_tier"] = self.listing["tier_id"]
+        
+    def get_star_rating(self):
+        """This gets the number of stars a listing has"""
+        self.properties["stars"] = self.listing["star_rating"]
+    
+    def get_reviews(self):
+        """This currently gets the reviews on the first page of the listing. Needs to be 
+        modified to get more reviews"""
+        listingreviews = {}
+        reviews = self.listing["sorted_reviews"]
+        for review in reviews:
+            comment = review["comments"]
+            response = review["response"]
+            reviewId = review["id"]
+            review_date = review["created_at"]
+            review_rating = review["rating"]
+            host_was_superhost = review["reviewee"]["is_superhost"]
+            reviewer_was_superhost=review["reviewer"]["is_superhost"]
+            listingreviews[reviewId] = {
+                    "comment":comment,
+                    "response": response,
+                    "reviewDate": review_date,
+                    "rating": review_rating, 
+                    "host_was_superhost": host_was_superhost,
+                    "reviewer_was_superhost": reviewer_was_superhost}
+        self.properties["reviews"] = listingreviews
+        
+    def get_descriptions(self):
+        return self.listing["sectioned_description"]
+    
+    def get_description_language(self):
+        self.properties["listing_language"] = self.get_descriptions()["localized_language_name"]
+    
+    def get_listing_description(self):
+        self.properties["description"] = self.get_descriptions()["description"]
+    
+    def get_transit(self):
+        self.properties["transit_details"] = self.get_descriptions()["transit"]
+        
+    def get_listing_name(self):
+        """Gets the name of the listing"""
+        self.properties["listing_name"] = self.get_descriptions()["name"]
+        
+    def get_listing_author(self):
+        self.properties["author_type"] = self.get_descriptions()["author_type"]
+    
+    def get_interaction_guide(self):
+        self.properties["interaction_guide"] = self.get_descriptions()["interaction"]
+    
+    def get_notes(self):
+        self.properties["host_notes"] = self.get_descriptions()["notes"]
+    
+    def get_neighborhood_details(self):
+        self.properties["neighborhood_details"] = self.get_descriptions()["neighborhood_overview"]
+        
+    def get_space_details(self):
+        self.properties["space_details"] = self.get_descriptions()["space"]
+        
+    def get_summary(self):
+        self.properties["summary"] = self.get_descriptions()["summary"]
+        
+    def get_is_repr_inventory(self):
+        self.properties["is_representative_inventory"] = self.listing["is_representative_inventory"]
