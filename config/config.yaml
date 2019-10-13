@@ -1,0 +1,8 @@
+# All delays are in seconds
+googleTranslateDelay : 5
+listingLoadDelay : 2
+
+
+
+
+retrieveHostResponse : 0 #Set to 1 if you want the host's response, else set to 0.
