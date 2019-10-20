@@ -4,5 +4,11 @@ listingLoadDelay : 2
 
 
 
-# Details of what tho extract from a listing.
+# review Extraction.
 retrieveHostResponse : 0 #Set to 1 if you want the host's response, else set to 0.
+
+# search
+destination : "New York"
+destinationUniquifier : "NY" # This allows you specify the specific destination if multiple places have the same name.
+houseListingSuffix : "Stays" # This tells the search API to return only house listings and not experiences
+numListingsFromSearch : 300 # Maximum number of listings to get from a single location

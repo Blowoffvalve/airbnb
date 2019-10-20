@@ -29,7 +29,7 @@ def expandAllReviews(driver):
     This takes a web page and clicks 'Read More' on the reviews
     :param driver: webdriver instance
     """
-    readMoreReviewsSelector = "#reviews " + selectors["readMoreSelector"]
+    readMoreReviewsSelector = " ".join(["#reviews ", selectors["readMoreSelector"]])
     for element in driver.find_elements_by_css_selector(readMoreReviewsSelector):
         coordinates = element.location  # returns dict of X, Y coordinates
         coordinates['y']-=100
@@ -37,7 +37,8 @@ def expandAllReviews(driver):
         try:
             element.click()
         except Exception as e:
-            print(e)
+            #print(e)
+            pass
 
 
 def getReviewsNextPage(driver):
@@ -46,13 +47,14 @@ def getReviewsNextPage(driver):
     :param driver: webdriver instance
     :return: 1 if there is a new page and 0 otherwise
     """
-    element = driver.find_element_by_css_selector(selectors['nextPageSelector'])
+    reviewsNextPageSelector = " ".join(["#reviews", selectors['nextPageSelector']])
+    element = driver.find_element_by_css_selector(reviewsNextPageSelector)
     # Check if an svg exists inside the next review page button. If it doesn't, then you're on the last page.
     try:
         element.find_element_by_css_selector("svg")
         coordinates = element.location  # returns dict of X, Y coordinates
-        print(element.location_once_scrolled_into_view)
-        print(element.location)
+        #print(element.location_once_scrolled_into_view)
+        #print(element.location)
         coordinates['y'] -= 100
         driver.execute_script("window.scrollTo({}, {})".format(coordinates["x"], coordinates["y"]))
         element.click()
