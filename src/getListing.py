@@ -12,15 +12,16 @@ __file__ = os.path.abspath(os.curdir) + "\\src\\getListing.py"
 configDir = os.path.abspath(os.path.join(__file__, os.pardir, os.pardir, 'config'))
 selectors = yaml.safe_load(open(configDir + "\\selectors.yaml", "r"))
 config = yaml.safe_load(open(configDir + "\\config.yaml", "r"))
-listing = {}
 
+
+listing = {}
 driver = webdriver.Chrome()
-listingID = 16038702
+listingID = 13650069
 listingURL = "http://www.airbnb.com/rooms/"+str(listingID)
 driver.get(listingURL)
 
 # Change to listener for network activity
-time.sleep(1)
+time.sleep(config['listingLoadDelay'])
 
 
 def expandAllReviews(driver):
@@ -86,13 +87,14 @@ def getReviewsFromPage(driver):
     :return: List of reviews on the page without any cleaning applied
     """
     reviews = []
-    elements = driver.find_elements_by_css_selector(selectors['reviewTextSelector'])
+    reviewTextSelector = selectors['reviewTag'] + " " + selectors['textSelector']
+    elements = driver.find_elements_by_css_selector(reviewTextSelector)
     for element in elements[6:]: # The first 6 elements the selector gets are the
         print(len(reviews))
         # To remove replies, check if the parent of the review is already in the list(meaning this text is a host's
         # response). If so, don't retrieve it.
         reviewParent = element.find_element_by_xpath("../../../../..")
-        reviewParentText = reviewParent.find_element_by_css_selector(selectors["reviewTextSelector"]).text
+        reviewParentText = reviewParent.find_element_by_css_selector(reviewTextSelector).text
         reviewText = element.text
         if ord(reviewText[0]) == 8230: # Check if reviewText == '...'
             continue
@@ -126,18 +128,45 @@ def getAllListingReviews(driver):
 def getListingCapacity(driver):
     elements = driver.find_elements_by_css_selector(selectors["listingDetailsSelector"])
     listingCapacity = elements[0].text.split("\n")  #This returns a \n separated list of the capacity of the listing
-    listing['guestCount'] = int(listingCapacity[0].split(" ")[0])
-    listing["bedroomCount"] = int(listingCapacity[1].split(" ")[0])
-    listing["bedCount"] = int(listingCapacity[2].split(" ")[0])
-    listing["bathRoomCount"] = int(listingCapacity[3].split(" ")[0])
+    listing['guestCount'] = int(listingCapacity[-4].split(" ")[0])
+    listing["bedroomCount"] = int(listingCapacity[-3].split(" ")[0])
+    listing["bedCount"] = int(listingCapacity[-2].split(" ")[0])
+    listing["bathRoomCount"] = int(listingCapacity[-1].split(" ")[0])
 
 
 def getListingAmenities(driver):
     # Click the show all amenities button
     element = driver.find_element_by_css_selector(selectors["amenitiesSelector"])
+    coordinates = element.location
+    coordinates['y'] -= 100
+    driver.execute_script("window.scrollTo({}, {})".format(coordinates["x"], coordinates["y"]))
     element.find_element_by_css_selector(selectors["readMoreSelector"]).click()  # Show all amenitites of this listing
-    amenitiesPopup = driver.find_element_by_css_selector(selectors["amenitiesPopUpSelector"])
+    time.sleep(config['listingLoadDelay'])
 
+    # Navigate the popup
+    amenitiesPopup = driver.find_element_by_css_selector(selectors["amenitiesPopUpSelector"])
+    amenitiesSection1stLevel = amenitiesPopup.find_element_by_tag_name("section")
+    amenitiesSections = amenitiesSection1stLevel.find_elements_by_tag_name("section")
+
+    # Get all amenities and the section they fall under
+    sections = {}
+    for section in amenitiesSections:
+        sectionName = section.find_element_by_css_selector(selectors["amenitySectionNameSelector"]).text
+        if sectionName != "Not included":
+            sectionElements = section.find_elements_by_css_selector(selectors["textSelector"])
+            sectionAmenitiesList = []
+            for element in sectionElements:
+                sectionAmenitiesList.append(element.text)
+            sections[sectionName] = sectionAmenitiesList
+        else:
+            sectionElements = section.find_elements_by_css_selector(selectors["unavailableAmenitySelector"])
+            sectionAmenitiesList = []
+            for element in sectionElements:
+                sectionAmenitiesList.append(element.text)
+            sections[sectionName] = sectionAmenitiesList
+    listing["amenities"] = sections
 
 
 listing["reviews"] = getAllListingReviews(driver)
+getListingCapacity(driver)
+getListingAmenities(driver)

@@ -4,5 +4,5 @@ listingLoadDelay : 2
 
 
 
-
+# Details of what tho extract from a listing.
 retrieveHostResponse : 0 #Set to 1 if you want the host's response, else set to 0.
