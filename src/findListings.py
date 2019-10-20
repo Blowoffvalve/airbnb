@@ -7,7 +7,7 @@ import json
 
 
 # Load config
-__file__ = os.path.abspath(os.curdir) + "\\src\\findListing.py"
+#__file__ = os.path.abspath(os.curdir) + "\\src\\findListing.py"
 configDir = os.path.abspath(os.path.join(__file__, os.pardir, os.pardir, 'config'))
 outputDir = os.path.abspath(os.path.join(__file__, os.pardir, os.pardir, 'output'))
 selectors = yaml.safe_load(open(configDir + "\\selectors.yaml", "r"))
@@ -83,10 +83,9 @@ def getAllListings(driver):
         listings.extend(getListingsOnPage(driver))
     return listings
 
-
 submitSearchTerms(driver)
 listings = getAllListings(driver)
-
+driver.close()
 
 with open(outputFile, "w") as fileHandle:
     json.dump(listings, fileHandle)
