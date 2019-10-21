@@ -14,7 +14,7 @@ selectors = yaml.safe_load(open(configDir + "\\selectors.yaml", "r"))
 config = yaml.safe_load(open(configDir + "\\config.yaml", "r"))
 outputFile = outputDir + "\\listings.json"
 
-listing = {}
+#listing = {}
 driver = webdriver.Chrome()
 url = "http://www.airbnb.com"
 driver.get(url)
@@ -33,12 +33,12 @@ def submitSearchTerms(driver):
 
 
 def getListingsOnPage(driver):
-    listings = []
+    pageListings = list()
     listingElements = driver.find_elements_by_css_selector(selectors["searchListingSelector"])
     for listingElem in listingElements:
         listing = {}
         element = listingElem.find_element_by_css_selector(selectors["searchListingURLSelector"])
-        listing["URL"] = element.get_attribute("href")
+        listing["URL"] = element.get_attribute("href").split("?")[0]
         listing["id"] = element.get_attribute("href").split("/")[4].split("?")[0]
 
         try:    # New listings don't have this
@@ -55,8 +55,8 @@ def getListingsOnPage(driver):
         element = listingElem.find_element_by_css_selector("._61b3pa")
         pricingElement = element.find_element_by_css_selector(selectors["listingPriceSelector"])
         listing["price"] = pricingElement.find_element_by_xpath("..").text.split()[1]
-        listings.append(listing)
-    return listings
+        pageListings.append(listing)
+    return pageListings
 
 
 def getListingsNextPage(driver):
