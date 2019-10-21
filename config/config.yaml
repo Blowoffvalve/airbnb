@@ -7,8 +7,8 @@ retrieveHostResponse : 0 #Set to 1 if you want the host's response, else set to 
 maxReviewsPerListing : 50 #Control how many reviews are extracted from a single listing
 
 # search
-destination : "New York"
-destinationUniquifier : "NY" # This allows you specify the specific destination if multiple places have the same name.
+destination : "Lincoln"
+destinationUniquifier : "NE" # This allows you specify the specific destination if multiple places have the same name.
 houseListingSuffix : "Stays" # This tells the search API to return only house listings and not experiences
 numListingsFromSearch : 300 # Maximum number of listings to get from a single location
 

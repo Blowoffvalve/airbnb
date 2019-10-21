@@ -116,16 +116,19 @@ def getAllListingReviews(driver):
     :return: List of reviews for a listing
     """
     time.sleep(config['listingLoadDelay'])
-    translated = translateReviews(driver)# Translate reviews if a translate button exists on the first page
+    translated = translateReviews(driver)  # Translate reviews if a translate button exists on the first page
     reviews = getReviewsFromPage(driver)
-    while len(reviews)<=config["maxReviewsPerListing"] and getReviewsNextPage(driver) :
-        # print(len(reviews))
-        time.sleep(config['listingLoadDelay'])
-        if translated==0:
-            translated = translateReviews(driver)
-        expandAllReviews(driver)
-        reviews.extend(getReviewsFromPage(driver))
-        # print(translated)
+    try:
+        while len(reviews)<=config["maxReviewsPerListing"] and getReviewsNextPage(driver) :
+            # print(len(reviews))
+            time.sleep(config['listingLoadDelay'])
+            if translated==0:
+                translated = translateReviews(driver)
+            expandAllReviews(driver)
+            reviews.extend(getReviewsFromPage(driver))
+            # print(translated)
+    except exceptions.NoSuchElementException:  # Host has no reviews
+        return []
     return reviews[:config["maxReviewsPerListing"]]
 
 
@@ -179,22 +182,22 @@ with open(inputFile, "r") as fileHandle:
 
 failed = 0
 for i, item in enumerate(listings):
+    # Change to listener for network activity
+    time.sleep(config['listingLoadDelay'])
+    listing = dict()
+    listing["id"] = item["id"]
+    driver.get(item["URL"])
     try:
-        # Change to listener for network activity
-        time.sleep(config['listingLoadDelay'])
-        listing = dict()
-        listing["id"] = item["id"]
-        driver.get(item["URL"])
         listing["reviews"] = getAllListingReviews(driver)
         getListingCapacity(driver)
         getListingAmenities(driver)
         populatedListings.append(listing)
-    except:
+    except: # Airbnb plus listings have a different style sheet. I'm ignoring them.
         print("Problem processing listing {}".format(item["id"]))
         failed+=1
-    print("{} listings processed".format(i))
+    print("{} listings processed".format(i+1))
 
-print("{} listings processed. /n {} retrievals failed".format(i, failed))
+print("{} listings processed. /n {} retrievals failed".format(i+1, failed))
 with open(outputFile, "w") as fileHandle:
     json.dump(populatedListings, fileHandle)
 
