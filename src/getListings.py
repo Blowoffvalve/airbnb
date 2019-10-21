@@ -5,12 +5,9 @@ from selenium import webdriver
 from selenium.common import exceptions
 import json
 import logging
-from selenium.webdriver.common.by import By
-from bs4 import BeautifulSoup
-
 
 # Load config
-#__file__ = os.path.abspath(os.curdir) + "\\src\\getListing.py"
+#__file__ = os.path.abspath(os.curdir) + "\\src\\getListings.py"
 outputDir = os.path.abspath(os.path.join(__file__, os.pardir, os.pardir, 'output'))
 configDir = os.path.abspath(os.path.join(__file__, os.pardir, os.pardir, 'config'))
 selectors = yaml.safe_load(open(configDir + "\\selectors.yaml", "r"))
@@ -21,13 +18,6 @@ outputFile = "\\".join([outputDir, config["populatedListingsFile"]])
 driver = webdriver.Chrome()
 
 populatedListings = []
-#listing = {}
-#listingID = 13650069
-#listingURL = "http://www.airbnb.com/rooms/"+str(listingID)
-#driver.get(listingURL)
-
-# Change to listener for network activity
-#time.sleep(config['listingLoadDelay'])
 
 
 def expandAllReviews(driver):
@@ -187,7 +177,8 @@ def getListingAmenities(driver):
 with open(inputFile, "r") as fileHandle:
     listings = json.load(fileHandle)
 
-for item in listings:
+failed = 0
+for i, item in enumerate(listings):
     try:
         # Change to listener for network activity
         time.sleep(config['listingLoadDelay'])
@@ -200,7 +191,10 @@ for item in listings:
         populatedListings.append(listing)
     except:
         print("Problem processing listing {}".format(item["id"]))
+        failed+=1
+    print("{} listings processed".format(i))
 
+print("{} listings processed. /n {} retrievals failed".format(i, failed))
 with open(outputFile, "w") as fileHandle:
     json.dump(populatedListings, fileHandle)
 

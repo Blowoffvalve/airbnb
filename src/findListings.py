@@ -5,7 +5,6 @@ from selenium import webdriver
 from selenium.common import exceptions
 import json
 
-
 # Load config
 #__file__ = os.path.abspath(os.curdir) + "\\src\\findListing.py"
 configDir = os.path.abspath(os.path.join(__file__, os.pardir, os.pardir, 'config'))
@@ -14,7 +13,6 @@ selectors = yaml.safe_load(open(configDir + "\\selectors.yaml", "r"))
 config = yaml.safe_load(open(configDir + "\\config.yaml", "r"))
 outputFile = outputDir + "\\listings.json"
 
-#listing = {}
 driver = webdriver.Chrome()
 url = "http://www.airbnb.com"
 driver.get(url)
@@ -82,6 +80,7 @@ def getAllListings(driver):
         time.sleep(config['listingLoadDelay'])
         listings.extend(getListingsOnPage(driver))
     return listings
+
 
 submitSearchTerms(driver)
 listings = getAllListings(driver)

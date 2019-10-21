@@ -2,8 +2,6 @@
 googleTranslateDelay : 5
 listingLoadDelay : 2
 
-
-
 # review Extraction.
 retrieveHostResponse : 0 #Set to 1 if you want the host's response, else set to 0.
 maxReviewsPerListing : 50 #Control how many reviews are extracted from a single listing
