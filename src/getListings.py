@@ -16,7 +16,6 @@ inputFile = "\\".join([outputDir, config["listingsFile"]])
 outputFile = "\\".join([outputDir, config["populatedListingsFile"]])
 
 driver = webdriver.Chrome()
-
 populatedListings = []
 
 
@@ -97,7 +96,7 @@ def getReviewsFromPage(driver):
         if (len(reviewText) < 13 and reviewText in ["Cleanliness", "Communication", "Check-in", "Accuracy",
                                                     "Location", "Value"]) or ord(reviewText[0]) == 8230:
             continue
-        reviewText.encode('utf8')
+        #reviewText.encode('utf8')
         if len(reviews) == 0:
             reviews.append(reviewText)
         else:
@@ -116,14 +115,14 @@ def getAllListingReviews(driver):
     :return: List of reviews for a listing
     """
     time.sleep(config['listingLoadDelay'])
-    translated = translateReviews(driver)  # Translate reviews if a translate button exists on the first page
-    reviews = getReviewsFromPage(driver)
+    translated = 0  # Start with the assertion that the reviews haven't been translated.
+    reviews = list()
     try:
-        while len(reviews)<=config["maxReviewsPerListing"] and getReviewsNextPage(driver) :
+        while len(reviews) <= config["maxReviewsPerListing"] and getReviewsNextPage(driver):
             # print(len(reviews))
             time.sleep(config['listingLoadDelay'])
-            if translated==0:
-                translated = translateReviews(driver)
+            if translated == 0:
+                translated = translateReviews(driver) # Translate reviews if a translate button exists on the first page
             expandAllReviews(driver)
             reviews.extend(getReviewsFromPage(driver))
             # print(translated)
@@ -192,7 +191,8 @@ for i, item in enumerate(listings):
         getListingCapacity(driver)
         getListingAmenities(driver)
         populatedListings.append(listing)
-    except: # Airbnb plus listings have a different style sheet. I'm ignoring them.
+    except Exception as e: # Airbnb plus listings have a different style sheet. I'm ignoring them.
+        print(e)
         print("Problem processing listing {}".format(item["id"]))
         failed+=1
     print("{} listings processed".format(i+1))

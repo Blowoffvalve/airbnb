@@ -39,3 +39,4 @@ I tested this application with python 3.6. YMMV if you use another version, howe
 3. Expand documentation on [selectors](config/selectors.yaml) so it's clear what each selector is doing. Current 
 status is too arcane.
 4. Add a config that does the scraping using a headless browser.
+5. Alter getListings to allow you exclude listings that aren't initially in English
